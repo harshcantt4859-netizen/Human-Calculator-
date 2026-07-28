@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Blitz - 90 Second Challenge</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #1e1e3f, #4a2f6b);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    padding: 20px;
+  }
+  .layout {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: #d0c8f0;
+  }
+  .stats span b {
+    display: block;
+    font-size: 26px;
+    color: #fff;
+    margin-top: 4px;
+  }
+  #timer.low b { color: #ff6b6b; }
+  .level-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .level-badge.easy { background: rgba(76,175,80,0.25); border-color: #4caf50; }
+  .level-badge.medium { background: rgba(255,193,7,0.25); border-color: #ffc107; }
+  .level-badge.hard { background: rgba(255,87,34,0.25); border-color: #ff5722; }
+  .level-badge.expert { background: rgba(255,0,110,0.25); border-color: #ff006e; }
+  .question {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 20px 0 30px;
+    min-height: 60px;
+    letter-spacing: 2px;
+  }
+  input#answer {
+    width: 100%;
+    padding: 16px;
+    font-size: 26px;
+    text-align: center;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    background: #fff;
+    color: #222;
+    box-shadow: 0 0 0 3px transparent;
+    transition: box-shadow 0.15s ease;
+  }
+  input#answer.correct-flash {
+    box-shadow: 0 0 0 3px #4caf50;
+  }
+  button {
+    margin-top: 24px;
+    padding: 14px 30px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #7b5cff, #ff5cc4);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  button:hover { transform: scale(1.05); }
+  button.secondary-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
+    margin-left: 10px;
+  }
+  .overlay {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #d0c8f0;
+    min-height: 24px;
+  }
+  .board-card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 30px;
+    width: 280px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .board-card h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  #leaderboardList {
+    list-style: none;
+  }
+  #leaderboardList li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.06);
+    font-size: 15px;
+  }
+  #leaderboardList li:first-child {
+    background: linear-gradient(135deg, rgba(123,92,255,0.35), rgba(255,92,196,0.35));
+    font-weight: 700;
+  }
+  #leaderboardList li .rank {
+    opacity: 0.7;
+    margin-right: 8px;
+  }
+  .empty-board {
+    text-align: center;
+    font-size: 14px;
+    color: #d0c8f0;
+    opacity: 0.8;
+    padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="card">
+    <h1>⚡ Math Blitz</h1>
+    <div id="levelBadge" class="level-badge easy">Level: Easy</div>
+
+    <div class="stats">
+      <span>Score<b id="score">0</b></span>
+      <span id="timer">Time Left<b id="time">90</b></span>
+      <span>Best<b id="best">0</b></span>
+    </div>
+
+    <div class="question" id="question">Press Start</div>
+
+    <input type="text" id="answer" placeholder="Type your answer..." inputmode="numeric" autocomplete="off" disabled>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div id="startArea">
+      <button id="startBtn">Start Game</button>
+      <button id="resetBtn" class="secondary-btn">Reset</button>
+    </div>
+  </div>
+
+  <div class="board-card">
+    <h2>🏆 Leaderboard</h2>
+    <ul id="leaderboardList"></ul>
+  </div>
+</div>
+
+<script>
+  const questionEl = document.getElementById('question');
+  const answerEl = document.getElementById('answer');
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+  const bestEl = document.getElementById('best');
+  const overlayEl = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const timerBox = document.getElementById('timer');
+  const levelBadge = document.getElementById('levelBadge');
+  const leaderboardList = document.getElementById('leaderboardList');
+
+  const GAME_DURATION = 90; // total seconds per game session
+
+  let score = 0;
+  let bestScore = 0;
+  let timeLeft = GAME_DURATION;
+  let currentAnswer = null;
+  let timerInterval = null;
+  let gameActive = false;
+
+  // Leaderboard is kept in memory only (resets on page reload).
+  let leaderboard = [];
+
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Difficulty automatically scales up as the player's score increases.
+  function getLevel() {
+    if (score < 5) return 'easy';
+    if (score < 10) return 'medium';
+    if (score < 15) return 'hard';
+    return 'expert';
+  }
+
+  function updateLevelBadge(level) {
+    levelBadge.className = 'level-badge ' + level;
+    const labels = { easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' };
+    levelBadge.textContent = 'Level: ' + labels[level];
+  }
+
+  function generateQuestion() {
+    const level = getLevel();
+    updateLevelBadge(level);
+
+    let maxNum, multMax;
+    if (level === 'easy')        { maxNum = 10;  multMax = 10; }
+    else if (level === 'medium') { maxNum = 50;  multMax = 12; }
+    else if (level === 'hard')   { maxNum = 100; multMax = 15; }
+    else                          { maxNum = 200; multMax = 20; }
+
+    const ops = ['+', '-', '×'];
+    const op = ops[randInt(0, 2)];
+    let a, b, answer;
+
+    if (op === '+') {
+      a = randInt(1, maxNum);
+      b = randInt(1, maxNum);
+      answer = a + b;
+    } else if (op === '-') {
+      a = randInt(1, maxNum);
+      b = randInt(1, maxNum);
+      if (b > a) [a, b] = [b, a]; // avoid negative results
+      answer = a - b;
+    } else {
+      a = randInt(1, multMax);
+      b = randInt(1, multMax);
+      answer = a * b;
+    }
+
+    currentAnswer = answer;
+    questionEl.textContent = `${a} ${op} ${b} = ?`;
+    answerEl.value = '';
+  }
+
+  function startGame() {
+    score = 0;
+    timeLeft = GAME_DURATION;
+    gameActive = true;
+    scoreEl.textContent = score;
+    timeEl.textContent = timeLeft;
+    overlayEl.textContent = '';
+    timerBox.classList.remove('low');
+    answerEl.disabled = false;
+    answerEl.focus();
+    startBtn.textContent = 'Restart';
+
+    generateQuestion();
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      timeEl.textContent = timeLeft;
+      if (timeLeft <= 15) timerBox.classList.add('low');
+      if (timeLeft <= 0) {
+        endGame();
+      }
+    }, 1000);
+  }
+
+  function endGame() {
+    gameActive = false;
+    clearInterval(timerInterval);
+    answerEl.disabled = true;
+    questionEl.textContent = "Time's up!";
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestEl.textContent = bestScore;
+      overlayEl.textContent = `🎉 New Best! You solved ${score} question(s).`;
+    } else {
+      overlayEl.textContent = `You solved ${score} question(s). Best: ${bestScore}`;
+    }
+
+    maybeAddToLeaderboard(score);
+  }
+
+  // Only prompts for a name if the score is good enough to make the top 5.
+  function maybeAddToLeaderboard(finalScore) {
+    if (finalScore <= 0) return;
+
+    const qualifies = leaderboard.length < 5 || finalScore > leaderboard[leaderboard.length - 1].score;
+    if (!qualifies) return;
+
+    const name = window.prompt(`New leaderboard score: ${finalScore}! Enter your name:`, 'Player');
+    const displayName = (name && name.trim()) ? name.trim().slice(0, 16) : 'Player';
+
+    leaderboard.push({ name: displayName, score: finalScore });
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 5);
+
+    renderLeaderboard();
+  }
+
+  function renderLeaderboard() {
+    leaderboardList.innerHTML = '';
+
+    if (leaderboard.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-board';
+      empty.textContent = 'No scores yet — be the first!';
+      leaderboardList.appendChild(empty);
+      return;
+    }
+
+    leaderboard.forEach((entry, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span><span class="rank">#${i + 1}</span>${entry.name}</span><span>${entry.score}</span>`;
+      leaderboardList.appendChild(li);
+    });
+  }
+
+  // Fully resets the current session's game state (score, timer, best score, UI).
+  // The leaderboard itself is NOT cleared, since it's meant to persist across attempts.
+  function resetGame() {
+    clearInterval(timerInterval);
+    gameActive = false;
+
+    score = 0;
+    timeLeft = GAME_DURATION;
+    bestScore = 0;
+    currentAnswer = null;
+
+    scoreEl.textContent = score;
+    timeEl.textContent = timeLeft;
+    bestEl.textContent = bestScore;
+    overlayEl.textContent = '';
+    timerBox.classList.remove('low');
+    updateLevelBadge('easy');
+
+    questionEl.textContent = 'Press Start';
+    answerEl.value = '';
+    answerEl.disabled = true;
+
+    startBtn.textContent = 'Start Game';
+  }
+
+  answerEl.addEventListener('input', () => {
+    if (!gameActive) return;
+    const val = answerEl.value.trim();
+    if (val === '') return;
+
+    if (Number(val) === currentAnswer) {
+      score++;
+      scoreEl.textContent = score;
+      answerEl.classList.add('correct-flash');
+      setTimeout(() => answerEl.classList.remove('correct-flash'), 150);
+      generateQuestion();
+    }
+  });
+
+  startBtn.addEventListener('click', startGame);
+  resetBtn.addEventListener('click', resetGame);
+
+  answerEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.preventDefault();
+  });
+
+  renderLeaderboard();
+</script>
+
+</body>
+</html>
